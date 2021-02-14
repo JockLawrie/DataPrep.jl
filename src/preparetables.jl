@@ -4,7 +4,8 @@ export prepare_tables
 
 using ..config
 
-function prepare_tables(cfg::DataPrepConfig)
+function prepare_tables(configfile::String)
+    cfg = DataPrepConfig(configfile)
 end
 
 end

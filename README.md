@@ -28,12 +28,12 @@ The following TOML file demonstrates the format for each of these operations.
 Further examples are given in the test suite.
 
 ```toml
-projectname = "my-project-dataprep"
+projectname = "my-project"
 description = "Preparing tables for analysis"
+output_directory = "/path/to/output/directory"
 
 [tables.table1]
-infile     = "/path/to/infile1.csv"
-outfile    = "/path/to/outfile1.csv"
+datafile   = "/path/to/infile1.csv"
 schemafile = "/path/to/schema1.toml"
 eachrow    = [  # Only columns listed below will be included in the result
     "retain row if $(birthdate) is not missing",  # Operation 3. The format is: retain row if expression
@@ -45,8 +45,7 @@ eachrow    = [  # Only columns listed below will be included in the result
 ]
 
 [tables.table2]
-infile     = "/path/to/infile2.csv"
-outfile    = "/path/to/outfile2.csv"
+datafile   = "/path/to/infile2.csv"
 schemafile = "/path/to/schema2.toml"
 eachrow    = [
     "retain row if $(birthdate) is not missing"

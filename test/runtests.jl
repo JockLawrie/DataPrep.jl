@@ -1,6 +1,9 @@
 using Test
 using DataPrep
 
+using CSV
+using DataFrames
+
 # NOTE: pwd is /path/to/DataPrep.jl/test/
 const outdir = joinpath(pwd(), "output")
 

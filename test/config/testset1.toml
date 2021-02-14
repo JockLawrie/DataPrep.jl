@@ -1,0 +1,20 @@
+projectname = "testset1"
+description = "Test set 1"
+output_directory = "output"  # joinpath(pwd(), "output"). During testing this is /path/to/DataPrep.jl/test/output
+
+[tables.table1]  # Output file is joinpath(pwd(), "output/table1.tsv")
+input_data_file    = "data/table1_input.csv"
+target_schema_file = "schema/table1.toml"
+eachrow = [  # Only columns listed below will be included in the result
+    "retain row if !ismissing(input[:BirthDate])",  # Applied before any transformations
+    "firstname  = input[:FirstName]"  # dummy field until test set is complete
+#    "firstname = using $(FirstName) replace ",
+#    "lastname  = x",
+#    "fullname  = $(firstname) $(lastname)",
+#    "birthdate = x",
+#    "gender    = x",
+#    "retain row if row satisfies schema"
+
+#    "col1 = using $(col1) replace \"my string\" with string2",  # Operation 2. Use escaped quotation marks if a string contains spaces.
+#    "col2 = using $(col1) replace Regex(string1) with SubstitutionString(string2)",  # Operation 2. Exclude outer quotation marks. Escape backslashes.
+]
