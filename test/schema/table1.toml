@@ -1,0 +1,11 @@
+name = "table1"
+description = "Table 1 for test set 1"
+primarykey  = "personid"  # A column name or a vector of column names
+columns = [
+    {name = "personid",  description = "Person ID",  datatype = "UInt",   validvalues = "UInt",   iscategorical = false, isrequired = true,  isunique = true},
+    {name = "firstname", description = "First name", datatype = "String", validvalues = "String", iscategorical = false, isrequired = false, isunique = false},
+    {name = "lastname",  description = "Last name",  datatype = "String", validvalues = "String", iscategorical = false, isrequired = false, isunique = false},
+    {name = "fullname",  description = "Full name",  datatype = "String", validvalues = "String", iscategorical = false, isrequired = false, isunique = false},
+    {name = "birthdate", description = "Birth date", datatype = "Date",   validvalues = "Date",   iscategorical = false, isrequired = true,  isunique = false},
+    {name = "gender",    description = "Gender",     datatype = "String", validvalues = ["Male", "Female", "Other", "Not disclosed"], iscategorical = true, isrequired = false, isunique = false}
+]

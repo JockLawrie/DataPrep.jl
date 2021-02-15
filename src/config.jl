@@ -1,6 +1,6 @@
 module config
 
-export DataPrepConfig
+export DataPrepConfig, TableConfig
 
 using Dates
 using Schemata

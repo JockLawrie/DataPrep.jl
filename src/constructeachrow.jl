@@ -2,9 +2,12 @@ module constructeachrow
 
 export construct_eachrow
 
+using RuntimeGeneratedFunctions
+RuntimeGeneratedFunctions.init(@__MODULE__)
+
 function construct_eachrow(arr::Vector{String})
     result = Vector{Function}(undef, length(arr))
-    for (i, s) in arr
+    for (i, s) in enumerate(arr)
         if s[1:14] == "retain row if "
             result[i] = construct_filter(s[15:end])
             continue
@@ -24,18 +27,24 @@ function construct_eachrow(arr::Vector{String})
     result
 end
 
-function construct_filter(s::String)
-    (input, output) -> eval(Meta.parse(ex))
+function construct_value_constructor(colname::Symbol, ex)
+    ex = Meta.parse("(input, output) -> (\"$(colname)\", $(ex))")
+    @RuntimeGeneratedFunction(ex)
 end
 
-function construct_replace(s::String)
+function construct_filter(ex)
+    ex = Meta.parse("(input, output) -> $(ex)")
+    @RuntimeGeneratedFunction(ex)
+end
+
+#construct_value_constructor(colname::Symbol, ex) = (input, output) -> (colname, eval(Meta.parse(ex)))
+
+#construct_filter(ex) = (input, output) -> eval(Meta.parse(ex))
+
+function construct_replace(s)
 end
 
 function construct_row_satisfies_schema()
-end
-
-function construct_value_constructor(colname::Symbol, ex::String)
-    (input, output) -> (colname, eval(Meta.parse(ex)))
 end
 
 end

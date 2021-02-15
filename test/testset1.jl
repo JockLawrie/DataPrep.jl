@@ -3,17 +3,18 @@ configfile = joinpath(pwd(), "config", "testset1.toml")
 outdir1 = DataPrep.prepare_tables(configfile)
 
 # Import result
-outfile = joinpath(outdir1, "table1.tsv")
+outfile = joinpath(outdir1, "output", "table1.tsv")
 result  = DataFrame(CSV.File(outfile; delim='\t', type=String))
 
 # Import target
 targetfile = joinpath(pwd(), "data", "table1_target.csv")
-target     = DataFrame(CSV.File(outfile; delim=',', type=String))
+target     = DataFrame(CSV.File(targetfile; delim=',', type=String))
 
 # Compare
 
-println(output)
-println("")
-println(target)
+show(result)
+println("\n\n")
+show(target)
+println("\n\n")
 
-@test output == target
+@test result == target
