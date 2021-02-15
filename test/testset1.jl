@@ -14,7 +14,5 @@ target     = DataFrame(CSV.File(targetfile; delim=',', type=String))
 
 show(result)
 println("\n\n")
-show(target)
-println("\n\n")
 
 @test result == target

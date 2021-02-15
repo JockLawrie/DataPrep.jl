@@ -36,10 +36,10 @@ function prepare_table(tablename::String, tableconfig::TableConfig, outdir::Stri
     n = 1_000_000  # Process rows in batches of 1_000_000
     i = 0          # Current row number in the current batch
     i_total = 0    # Total number of rows processed
-    result  = init_table(tableconfig.target_schema, n)
+    result  = init_table(tableconfig.colnames, n)
     infile  = tableconfig.input_data_file
     outfile = joinpath(outdir, "output", "$(tablename).tsv")
-    CSV.write(outfile, init_table(tableconfig.target_schema, 0); delim='\t')
+    CSV.write(outfile, init_table(tableconfig.colnames, 0); delim='\t')
     for inrow in CSV.Rows(infile; reusebuffer=true)
         i += 1
         outrow = view(result, i:i, :)
@@ -96,9 +96,9 @@ function get_package_version()
     end
 end
 
-function init_table(tableschema::TableSchema, n::Int)
+function init_table(colnames::Vector{Symbol}, n::Int)
     result = DataFrame()
-    for colname in tableschema.columnorder
+    for colname in colnames
         result[!, colname] = Vector{Union{Missing, String}}(missing, n)
     end
     result

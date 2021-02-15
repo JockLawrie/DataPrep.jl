@@ -10,28 +10,34 @@ using ..constructeachrow
 
 ################################################################################
 """
-datafile:   The complete path to the data file.
-            If datafile is nothing, then the spine is constructed as part of the run_linkage function.
-schemafile: The complete path to the schema file.
-schema:     The TableSchema for the data, specified in the schema file.
+input_data_file:    The complete path to the input data file.
+target_schema_file: The complete path to the file containing the table's desired schema.
+target_schema:      The TableSchema for the data, specified in the target schema file.
 """
 struct TableConfig
     input_data_file::String
-    target_schema_file::String
-    target_schema::TableSchema
+    target_schema_file::Union{Nothing, String}
+    target_schema::Union{Nothing, TableSchema}
     eachrow::Vector{Function}  # f(row) = value. If value isa Bool, filter row. If value isa String, set value.
+    colnames::Vector{Symbol}
 
-    function TableConfig(input_data_file, target_schema_file, schema, eachrow)
-        !isnothing(input_data_file) && !isfile(input_data_file) && error("The input data file for the table does not exist.")
-        !isfile(target_schema_file) && error("The schema file for the table does not exist.")
-        new(input_data_file, target_schema_file, schema, eachrow)
+    function TableConfig(input_data_file, target_schema_file, target_schema, eachrow, colnames)
+        !isnothing(input_data_file)    && !isfile(input_data_file)    && error("The input data file for the table does not exist.")
+        !isnothing(target_schema_file) && !isfile(target_schema_file) && error("The schema file for the table does not exist.")
+        isnothing(target_schema_file)  && !isnothing(target_schema)   && error("Cannot have a schema without a schema file")
+        if isnothing(target_schema) && !isnothing(target_schema_file)
+            target_schema = readschema(target_schema_file)
+        end
+        isempty(colnames) && error("The user-supplied operations (eachrow) do not define any columns for the output")
+        new(input_data_file, target_schema_file, target_schema, eachrow, colnames)
     end
 end
 
 function TableConfig(d::Dict)
-    tableschema = readschema(d["target_schema_file"])
-    eachrow     = construct_eachrow(d["eachrow"])
-    TableConfig(d["input_data_file"], d["target_schema_file"], tableschema, eachrow)
+    target_schema_file = haskey(d, "target_schema_file") ? d["target_schema_file"] : nothing
+    tableschema        = isnothing(target_schema_file) ? nothing : readschema(d["target_schema_file"])
+    colnames, eachrow  = construct_eachrow(d["eachrow"])
+    TableConfig(d["input_data_file"], target_schema_file, tableschema, eachrow, colnames)
 end
 
 ################################################################################
