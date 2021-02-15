@@ -42,7 +42,7 @@ function prepare_table(tablename::String, tableconfig::TableConfig, outdir::Stri
     CSV.write(outfile, init_table(tableconfig.colnames, 0); delim='\t')
     for inrow in CSV.Rows(infile; reusebuffer=true)
         i += 1
-        outrow = view(result, i:i, :)
+        outrow = result[i, :]
         for f in tableconfig.eachrow
             val = f(inrow, outrow)
             if val isa Tuple  # (colname, value)
@@ -50,7 +50,7 @@ function prepare_table(tablename::String, tableconfig::TableConfig, outdir::Stri
             elseif val isa Bool
                 if val == false  # Row is not valid...roll back
                     i -= 1
-                    continue
+                    break
                 end
             else
                 error("Invalid value for function $(j): $(val)")
