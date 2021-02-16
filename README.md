@@ -20,9 +20,9 @@ There are 3 basic operations used to construct an output row:
 Note that column filtering is implied by the construction of the output row.
 That is, the output row contains only the fields listed in the TOML file.
 
-In addition, the following built-in functionality can be used as part of these operations:
+In addition, the following built-in functions can be used as part of these operations:
 
-1. Check whether the row satisfies the user-supplied schema.
+1. `row_satisfies_schema()` returns `true` if the row satisfies the user-supplied schema.
 
 The following TOML file demonstrates the format for each of these operations.
 Further examples are given in the test suite.

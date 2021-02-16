@@ -40,6 +40,12 @@ function prepare_table(tablename::String, tableconfig::TableConfig, outdir::Stri
     infile  = tableconfig.input_data_file
     outfile = joinpath(outdir, "output", "$(tablename).tsv")
     CSV.write(outfile, init_table(tableconfig.colnames, 0); delim='\t')
+    if !isnothing(tableconfig.target_schema)
+        target_schema     = tableconfig.target_schema
+        colname2colschema = target_schema.colname2colschema
+        config.constructeachrow.d[:target_schema] = target_schema
+        config.constructeachrow.d[:uniquevalues]  = Dict(colname => Set{colschema.datatype}() for (colname, colschema) in colname2colschema if colschema.isunique==true)
+    end
     for inrow in CSV.Rows(infile; reusebuffer=true)
         i += 1
         outrow = result[i, :]

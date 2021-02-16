@@ -10,13 +10,9 @@ eachrow = [  # Only columns listed below will be included in the result
     "personid   = input[:PersonID]",
     "firstname  = input[:FirstName]",  # dummy field until test set is complete
     "lastname   = input[:LastName]",
-    "fullname   = \"$(output[:firstname]) $(output[:lastname])\""
-#    "firstname = using $(FirstName) replace ",
-#    "lastname  = x",
-#    "birthdate = x",
-#    "gender    = x",
-#    "retain row if row satisfies schema"
-
-#    "col1 = using $(col1) replace \"my string\" with string2",  # Operation 2. Use escaped quotation marks if a string contains spaces.
-#    "col2 = using $(col1) replace Regex(string1) with SubstitutionString(string2)",  # Operation 2. Exclude outer quotation marks. Escape backslashes.
+    "fullname   = \"$(output[:firstname]) $(output[:lastname])\"",
+    "birthdate  = input[:BirthDate]",
+    "gender     = input[:Gender]",
+    "satisfies_schema = row_satisfies_schema()"
+    #"retain row if row_satisfies_schema()"
 ]

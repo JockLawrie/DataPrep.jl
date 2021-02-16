@@ -2,8 +2,11 @@ module constructeachrow
 
 export construct_eachrow
 
+using Schemata
 using RuntimeGeneratedFunctions
 RuntimeGeneratedFunctions.init(@__MODULE__)
+
+const d = Dict{Symbol, Any}()  # Populated by prepare_table(). Keys = [:target_schema, :uniquevalues]
 
 """
 Returns:
@@ -15,7 +18,7 @@ function construct_eachrow(arr::Vector{String})
     eachrow  = Vector{Function}(undef, length(arr))
     for (i, s) in enumerate(arr)
         if s[1:14] == "retain row if "
-            eachrow[i] = construct_filter(s[15:end])
+            eachrow[i] = construct_filter(strip(s[15:end]))
             continue
         end
         idx = findfirst('=', s)
@@ -25,8 +28,6 @@ function construct_eachrow(arr::Vector{String})
         ex = strip(s[(idx + 1):end])
         if ex[1:6] == "using "
             eachrow[i] = construct_replace(ex[7:end])
-        elseif ex == "row satisfies schema"
-            eachrow[i] = construct_row_satisfies_schema()
         else
             eachrow[i] = construct_value_constructor(colname, ex)
         end
@@ -34,24 +35,64 @@ function construct_eachrow(arr::Vector{String})
     colnames, eachrow
 end
 
-function construct_value_constructor(colname::Symbol, ex)
-    ex = Meta.parse("(input, output) -> (\"$(colname)\", $(ex))")
-    @RuntimeGeneratedFunction(ex)
+function construct_value_constructor(colname::Symbol, s)
+    if s == "row_satisfies_schema()"
+        (inrow, outrow) -> (colname, string(row_satisfies_schema(outrow, d[:target_schema], d[:uniquevalues])))
+    else
+        ex = Meta.parse("(input, output) -> (\"$(colname)\", $(s))")
+        @RuntimeGeneratedFunction(ex)
+    end
 end
 
-function construct_filter(ex)
-    ex = Meta.parse("(input, output) -> $(ex)")
-    @RuntimeGeneratedFunction(ex)
+function construct_filter(s)
+    if s == "row_satisfies_schema()"
+        (inrow, outrow) -> row_satisfies_schema(outrow, d[:target_schema], d[:uniquevalues])
+    else
+        ex = Meta.parse("(input, output) -> $(s)")
+        @RuntimeGeneratedFunction(ex)
+    end
 end
-
-#construct_value_constructor(colname::Symbol, ex) = (input, output) -> (colname, eval(Meta.parse(ex)))
-
-#construct_filter(ex) = (input, output) -> eval(Meta.parse(ex))
 
 function construct_replace(s)
 end
 
-function construct_row_satisfies_schema()
+################################################################################
+# Functions that the 3 basic operations can use
+
+"Returns true if outrow satisfies the table schema."
+function row_satisfies_schema(outrow, tableschema::TableSchema, uniquevalues)
+    # Assess each value in isolation (modified version of Schemata.assessrow!)
+    result = true
+    for (colname, colschema) in tableschema.colname2colschema
+        if !hasproperty(outrow, colname)
+            result = false  # Do not return early because we must collect unique values even if the row doesn't satisfy the schema
+            continue
+        end
+        val = getproperty(outrow, colname)
+        if ismissing(val) && colschema.isrequired
+            result = false  # Do not return early because we must collect unique values even if the row doesn't satisfy the schema
+            continue
+        end
+        if Schemata.value_is_valid(val, colschema.validvalues)
+            if colschema.isunique
+                if in(val, uniquevalues[colname])
+                    result = false  # Do not return early because we must collect unique values even if the row doesn't satisfy the schema
+                end
+                push!(uniquevalues[colname], val)
+            end
+            continue
+        end
+        result = false  # Do not return early because we must collect unique values even if the row doesn't satisfy the schema
+    end
+    result == false && return false  # Unique values have been collected -> can return early if the row doesn't satisfy the schema
+
+    # Assess intrarow constraints (modified version of Schemata.test_intrarow_constraints!)
+    for (msg, f) in tableschema.intrarow_constraints
+        ok = @eval $f($outrow)     # Hack to avoid world age problem.
+        ismissing(ok) && continue  # This case is picked up at the column level
+        !ok && return false
+    end
+    true
 end
 
 end
